@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Model Dashboard</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+        const { LineChart, Line, BarChart, Bar, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } = Recharts;
+
+        // Lucide Icons as inline SVG components
+        const TrendingUp = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                <polyline points="16 7 22 7 22 13"></polyline>
+            </svg>
+        );
+
+        const TrendingDown = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>
+                <polyline points="16 17 22 17 22 11"></polyline>
+            </svg>
+        );
+
+        const AlertCircle = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        );
+
+        const Award = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="8" r="7"></circle>
+                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+            </svg>
+        );
+
+        const Target = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+        );
+
+        const BarChart3 = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M3 3v18h18"></path>
+                <path d="M18 17V9"></path>
+                <path d="M13 17V5"></path>
+                <path d="M8 17v-3"></path>
+            </svg>
+        );
+
+        function MarketModelDashboard() {
+            const [selectedIndustry, setSelectedIndustry] = useState('Industrie_1');
+            const [selectedRegion, setSelectedRegion] = useState('All');
+
+            // Kompakte Datendefinition
+            const salesData = {
+                Region_1: {
+                    Industrie_1: [45.2, 48.7, 52.1, 50.8, 54.3, 58.9],
+                    Industrie_2: [62.5, 58.3, 65.4, 71.2, 76.8, 82.5],
+                    Industrie_3: [38.9, 41.2, 44.8, 46.1, 49.7, 53.2],
+                    Industrie_4: [71.3, 73.8, 75.9, 74.2, 77.6, 81.4]
+                },
+                Region_2: {
+                    Industrie_1: [28.7, 31.4, 35.8, 39.2, 43.1, 47.9],
+                    Industrie_2: [41.2, 39.8, 43.6, 48.9, 54.7, 61.3],
+                    Industrie_3: [19.5, 21.8, 24.3, 27.1, 30.8, 35.2],
+                    Industrie_4: [52.8, 55.9, 59.4, 58.1, 62.3, 67.8]
+                }
+            };
+
+            const marketIndex = {
+                Region_1: {
+                    Industrie_1: [100, 105.3, 108.7, 106.2, 110.5, 115.2],
+                    Industrie_2: [100, 95.8, 102.3, 108.9, 114.2, 119.8],
+                    Industrie_3: [100, 103.5, 107.2, 109.8, 113.6, 118.1],
+                    Industrie_4: [100, 104.2, 106.8, 105.1, 108.9, 112.7]
+                },
+                Region_2: {
+                    Industrie_1: [100, 107.2, 112.8, 118.5, 125.3, 132.8],
+                    Industrie_2: [100, 97.3, 103.8, 110.2, 117.8, 126.4],
+                    Industrie_3: [100, 108.4, 115.6, 123.8, 132.5, 142.1],
+                    Industrie_4: [100, 105.8, 110.3, 108.7, 113.9, 120.2]
+                }
+            };
+
+            const years = [2020, 2021, 2022, 2023, 2024, 2025];
+
+            // Berechnungsfunktionen
+            const calcCAGR = (start, end) => ((Math.pow(end / start, 1/5) - 1) * 100).toFixed(1);
+            const calcSPI = (sales, market) => ((sales / market) * 100).toFixed(1);
+            const calcCorrelation = (arr1, arr2) => {
+                const n = arr1.length;
+                const sum1 = arr1.reduce((a, b) => a + b, 0);
+                const sum2 = arr2.reduce((a, b) => a + b, 0);
+                const sum1Sq = arr1.reduce((s, v) => s + v * v, 0);
+                const sum2Sq = arr2.reduce((s, v) => s + v * v, 0);
+                const pSum = arr1.reduce((s, v, i) => s + v * arr2[i], 0);
+                const num = pSum - (sum1 * sum2 / n);
+                const den = Math.sqrt((sum1Sq - sum1 * sum1 / n) * (sum2Sq - sum2 * sum2 / n));
+                return den === 0 ? 0 : (num / den).toFixed(2);
+            };
+
+            // Gesamtstatistiken berechnen
+            const totalSales2025 = Object.values(salesData).reduce((sum, region) => 
+                sum + Object.values(region).reduce((s, ind) => s + ind[5], 0), 0
+            );
+            const totalSales2020 = Object.values(salesData).reduce((sum, region) => 
+                sum + Object.values(region).reduce((s, ind) => s + ind[0], 0), 0
+            );
+            const totalCAGR = calcCAGR(totalSales2020, totalSales2025);
+
+            // KPIs für alle Kombinationen
+            const allKPIs = [];
+            Object.keys(salesData).forEach(region => {
+                Object.keys(salesData[region]).forEach(industry => {
+                    const sales = salesData[region][industry];
+                    const market = marketIndex[region][industry];
+                    allKPIs.push({
+                        region,
+                        industry,
+                        cagr: parseFloat(calcCAGR(sales[0], sales[5])),
+                        spi2025: parseFloat(calcSPI(sales[5], market[5])),
+                        correlation: parseFloat(calcCorrelation(sales, market)),
+                        sales2025: sales[5],
+                        yoy: ((sales[5] / sales[4] - 1) * 100).toFixed(1)
+                    });
+                });
+            });
+
+            const avgSPI = (allKPIs.reduce((s, k) => s + k.spi2025, 0) / allKPIs.length).toFixed(1);
+            const outperformingCount = allKPIs.filter(k => k.spi2025 > 100).length;
+
+            // Wachstumsmärkte
+            const growthMarkets = [
+                { name: 'Wachstumsmarkt 1', cagr: 8.2, volume2030: 18.5, currentSales: 8.3, volume2025: 12.5 },
+                { name: 'Wachstumsmarkt 2', cagr: 12.5, volume2030: 15.7, currentSales: 3.2, volume2025: 8.7 },
+                { name: 'Wachstumsmarkt 3', cagr: 6.1, volume2030: 28.6, currentSales: 15.7, volume2025: 21.3 }
+            ].map(m => ({
+                ...m,
+                opportunityIndex: ((m.cagr * m.volume2030) / m.currentSales).toFixed(0)
+            })).sort((a, b) => b.opportunityIndex - a.opportunityIndex);
+
+            // Chart-Daten für ausgewählte Industrie vorbereiten
+            const prepareChartData = (region, industry) => {
+                return years.map((year, i) => ({
+                    year,
+                    sales: salesData[region][industry][i],
+                    market: marketIndex[region][industry][i]
+                }));
+            };
+
+            // Regionale Aggregate
+            const regionalStats = Object.keys(salesData).map(region => {
+                const regionSales2025 = Object.values(salesData[region]).reduce((s, ind) => s + ind[5], 0);
+                const regionSales2020 = Object.values(salesData[region]).reduce((s, ind) => s + ind[0], 0);
+                const regionKPIs = allKPIs.filter(k => k.region === region);
+                const topIndustry = regionKPIs.reduce((max, k) => k.cagr > max.cagr ? k : max);
+                
+                return {
+                    region,
+                    sales2025: regionSales2025.toFixed(1),
+                    cagr: calcCAGR(regionSales2020, regionSales2025),
+                    avgSPI: (regionKPIs.reduce((s, k) => s + k.spi2025, 0) / regionKPIs.length).toFixed(1),
+                    topIndustry: topIndustry.industry
+                };
+            });
+
+            return (
+                <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+                    <div className="max-w-7xl mx-auto space-y-6">
+                        
+                        {/* Header */}
+                        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                            <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                                <BarChart3 size={36} className="text-blue-500" />
+                                Market Model Dashboard
+                            </h1>
+                            <p className="text-slate-600 mt-1">Performance Analysis 2020-2025</p>
+                        </div>
+
+                        {/* Executive Summary KPIs */}
+                        <div className="grid grid-cols-4 gap-4">
+                            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-blue-100 text-sm font-medium">Total Sales 2025</span>
+                                    <Target size={24} className="text-blue-200" />
+                                </div>
+                                <div className="text-3xl font-bold">{totalSales2025.toFixed(1)}M €</div>
+                                <div className="text-blue-100 text-sm mt-1">+{((totalSales2025/totalSales2020 - 1)*100).toFixed(1)}% vs 2020</div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-green-100 text-sm font-medium">Total CAGR</span>
+                                    <TrendingUp size={24} className="text-green-200" />
+                                </div>
+                                <div className="text-3xl font-bold">{totalCAGR}%</div>
+                                <div className="text-green-100 text-sm mt-1">2020-2025</div>
+                            </div>
+                            
+                            <div className={`bg-gradient-to-br ${avgSPI > 100 ? 'from-emerald-500 to-emerald-600' : 'from-amber-500 to-amber-600'} rounded-xl shadow-lg p-6 text-white`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-white/90 text-sm font-medium">Avg SPI 2025</span>
+                                    <Award size={24} className="text-white/80" />
+                                </div>
+                                <div className="text-3xl font-bold">{avgSPI}</div>
+                                <div className="text-white/90 text-sm mt-1">{avgSPI > 100 ? 'Outperforming' : 'Below Market'}</div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-purple-100 text-sm font-medium">Outperformers</span>
+                                    <AlertCircle size={24} className="text-purple-200" />
+                                </div>
+                                <div className="text-3xl font-bold">{outperformingCount}/8</div>
+                                <div className="text-purple-100 text-sm mt-1">Segments SPI &gt; 100</div>
+                            </div>
+                        </div>
+
+                        {/* Regional Overview */}
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Regional Performance Overview</h2>
+                            <div className="grid grid-cols-2 gap-6">
+                                {regionalStats.map(stat => (
+                                    <div key={stat.region} className="border border-slate-200 rounded-lg p-4">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h3 className="text-lg font-semibold text-slate-700">{stat.region.replace('_', ' ')}</h3>
+                                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                                stat.avgSPI > 100 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                                            }`}>
+                                                SPI: {stat.avgSPI}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                            <div className="bg-slate-50 rounded p-3">
+                                                <div className="text-xs text-slate-600 mb-1">Sales 2025</div>
+                                                <div className="text-lg font-bold text-slate-800">{stat.sales2025}M €</div>
+                                            </div>
+                                            <div className="bg-slate-50 rounded p-3">
+                                                <div className="text-xs text-slate-600 mb-1">CAGR</div>
+                                                <div className="text-lg font-bold text-slate-800">{stat.cagr}%</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="text-sm">
+                                            <span className="text-slate-600">Top Performer: </span>
+                                            <span className="font-semibold text-green-600">{stat.topIndustry.replace('_', ' ')}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Industry Deep-Dive */}
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Industry Deep-Dive Analysis</h2>
+                            
+                            <div className="flex gap-2 mb-6">
+                                {['Industrie_1', 'Industrie_2', 'Industrie_3', 'Industrie_4'].map(ind => (
+                                    <button
+                                        key={ind}
+                                        onClick={() => setSelectedIndustry(ind)}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                                            selectedIndustry === ind 
+                                                ? 'bg-blue-500 text-white shadow-md' 
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                        }`}
+                                    >
+                                        {ind.replace('_', ' ')}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-6">
+                                {['Region_1', 'Region_2'].map(region => {
+                                    const chartData = prepareChartData(region, selectedIndustry);
+                                    const kpi = allKPIs.find(k => k.region === region && k.industry === selectedIndustry);
+                                    
+                                    return (
+                                        <div key={region} className="border border-slate-200 rounded-lg p-4">
+                                            <h3 className="text-lg font-semibold text-slate-700 mb-3">{region.replace('_', ' ')}</h3>
+                                            
+                                            <ResponsiveContainer width="100%" height={200}>
+                                                <LineChart data={chartData}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                                    <XAxis dataKey="year" tick={{fontSize: 11}} />
+                                                    <YAxis yAxisId="left" tick={{fontSize: 11}} />
+                                                    <YAxis yAxisId="right" orientation="right" tick={{fontSize: 11}} />
+                                                    <Tooltip contentStyle={{backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px'}} />
+                                                    <Legend wrapperStyle={{fontSize: '12px'}} />
+                                                    <Line yAxisId="left" type="monotone" dataKey="sales" stroke="#3b82f6" strokeWidth={3} name="Sales (M€)" />
+                                                    <Line yAxisId="right" type="monotone" dataKey="market" stroke="#6b7280" strokeWidth={2} strokeDasharray="5 5" name="Market Index" />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                            
+                                            <div className="grid grid-cols-2 gap-2 mt-4">
+                                                <div className="bg-blue-50 rounded p-3">
+                                                    <div className="text-xs text-slate-600">CAGR</div>
+                                                    <div className="text-xl font-bold text-blue-600">{kpi.cagr.toFixed(1)}%</div>
+                                                </div>
+                                                <div className={`${kpi.spi2025 > 100 ? 'bg-green-50' : 'bg-amber-50'} rounded p-3`}>
+                                                    <div className="text-xs text-slate-600">SPI 2025</div>
+                                                    <div className={`text-xl font-bold ${kpi.spi2025 > 100 ? 'text-green-600' : 'text-amber-600'}`}>
+                                                        {kpi.spi2025.toFixed(0)}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-purple-50 rounded p-3">
+                                                    <div className="text-xs text-slate-600">Correlation</div>
+                                                    <div className="text-xl font-bold text-purple-600">{kpi.correlation}</div>
+                                                </div>
+                                                <div className="bg-slate-50 rounded p-3">
+                                                    <div className="text-xs text-slate-600">YoY 2025</div>
+                                                    <div className="text-xl font-bold text-slate-700">{kpi.yoy}%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Performance Matrix */}
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Performance Matrix</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-slate-100 border-b-2 border-slate-300">
+                                            <th className="text-left p-3 font-semibold text-slate-700">Region</th>
+                                            <th className="text-left p-3 font-semibold text-slate-700">Industry</th>
+                                            <th className="text-center p-3 font-semibold text-slate-700">CAGR</th>
+                                            <th className="text-center p-3 font-semibold text-slate-700">SPI 2025</th>
+                                            <th className="text-center p-3 font-semibold text-slate-700">Correlation</th>
+                                            <th className="text-center p-3 font-semibold text-slate-700">Sales 2025</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {allKPIs.sort((a, b) => b.cagr - a.cagr).map((kpi, idx) => (
+                                            <tr key={`${kpi.region}-${kpi.industry}`} className={`border-b border-slate-200 ${idx === 0 ? 'bg-green-50' : ''}`}>
+                                                <td className="p-3 text-slate-700">{kpi.region.replace('_', ' ')}</td>
+                                                <td className="p-3 text-slate-700">{kpi.industry.replace('_', ' ')}</td>
+                                                <td className="text-center p-3 font-semibold text-slate-800">{kpi.cagr.toFixed(1)}%</td>
+                                                <td className="text-center p-3">
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                                        kpi.spi2025 > 100 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                                                    }`}>
+                                                        {kpi.spi2025.toFixed(0)}
+                                                    </span>
+                                                </td>
+                                                <td className="text-center p-3 font-semibold text-slate-800">{kpi.correlation}</td>
+                                                <td className="text-center p-3 text-slate-700">{kpi.sales2025.toFixed(1)}M €</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Growth Markets */}
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Growth Markets Portfolio 2025-2030</h2>
+                            
+                            <div className="mb-4">
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                        <XAxis dataKey="cagr" name="CAGR %" label={{ value: 'CAGR (%)', position: 'bottom' }} />
+                                        <YAxis dataKey="volume2030" name="Volume 2030" label={{ value: 'Market Volume 2030 (Bn €)', angle: -90, position: 'left' }} />
+                                        <Tooltip 
+                                            cursor={{strokeDasharray: '3 3'}}
+                                            content={({active, payload}) => {
+                                                if (active && payload && payload.length) {
+                                                    const data = payload[0].payload;
+                                                    return (
+                                                        <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200">
+                                                            <div className="font-semibold text-slate-800">{data.name}</div>
+                                                            <div className="text-sm text-slate-600">CAGR: {data.cagr}%</div>
+                                                            <div className="text-sm text-slate-600">Market 2030: {data.volume2030}Bn €</div>
+                                                            <div className="text-sm text-slate-600">Opp. Index: {data.opportunityIndex}</div>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }}
+                                        />
+                                        <Scatter name="Markets" data={growthMarkets} fill="#8b5cf6">
+                                            {growthMarkets.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={['#10b981', '#3b82f6', '#8b5cf6'][index]} />
+                                            ))}
+                                        </Scatter>
+                                    </ScatterChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-slate-100 border-b-2 border-slate-300">
+                                            <th className="text-left p-3 font-semibold text-slate-700">Market</th>
+                                            <th className="text-center p-3 font-semibold text-slate-700">CAGR %</th>
+                                            <th className="text-center p-3 font-semibold text-slate-700">Volume 2030</th>
+                                            <th className="text-center p-3 font-semibold text-slate-700">Our Sales</th>
+                                            <th className="text-center p-3 font-semibold text-slate-700">Opportunity Index</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {growthMarkets.map((market, idx) => (
+                                            <tr key={market.name} className={`border-b border-slate-200 ${idx === 0 ? 'bg-green-50' : ''}`}>
+                                                <td className="p-3 font-medium text-slate-700">
+                                                    {market.name}
+                                                    {idx === 0 && <span className="ml-2 text-xs bg-green-500 text-white px-2 py-1 rounded">Top</span>}
+                                                </td>
+                                                <td className="text-center p-3 font-semibold text-slate-800">{market.cagr}%</td>
+                                                <td className="text-center p-3 font-semibold text-slate-800">{market.volume2030}Bn €</td>
+                                                <td className="text-center p-3 text-slate-600">{market.currentSales}M €</td>
+                                                <td className="text-center p-3">
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                                        market.opportunityIndex > 500 ? 'bg-green-100 text-green-700' :
+                                                        market.opportunityIndex > 300 ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-purple-100 text-purple-700'
+                                                    }`}>
+                                                        {market.opportunityIndex}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Key Insights */}
+                        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl shadow-lg p-6 text-white">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                                <Award size={28} />
+                                Key Insights & Recommendations
+                            </h2>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <TrendingUp size={20} className="text-green-400" />
+                                        <h3 className="font-semibold text-green-400">Best Performance</h3>
+                                    </div>
+                                    <p className="text-sm">
+                                        Region 2 - Industrie 3 leads with exceptional 12.5% CAGR and SPI of 247.7
+                                    </p>
+                                </div>
+
+                                <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <AlertCircle size={20} className="text-amber-400" />
+                                        <h3 className="font-semibold text-amber-400">Needs Attention</h3>
+                                    </div>
+                                    <p className="text-sm">
+                                        Region 1 - Industrie 1 shows weakest performance with SPI of 51.1
+                                    </p>
+                                </div>
+
+                                <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Target size={20} className="text-blue-400" />
+                                        <h3 className="font-semibold text-blue-400">Top Opportunity</h3>
+                                    </div>
+                                    <p className="text-sm">
+                                        Wachstumsmarkt 2: Highest potential with 12.5% CAGR and Opportunity Index 615
+                                    </p>
+                                </div>
+
+                                <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <BarChart3 size={20} className="text-purple-400" />
+                                        <h3 className="font-semibold text-purple-400">Market Dynamics</h3>
+                                    </div>
+                                    <p className="text-sm">
+                                        Region 2 highly market-driven (corr. 0.94), Region 1 more independent (corr. 0.76)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="text-center text-slate-600 text-sm py-4">
+                            <p>Market Model Dashboard | Generated October 31, 2025</p>
+                        </div>
+
+                    </div>
+                </div>
+            );
+        }
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<MarketModelDashboard />);
+    </script>
+</body>
+</html>
