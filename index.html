@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Model Dashboard</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+        #loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 24px;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div id="loading">Loading Dashboard...</div>
+    </div>
+
+    <script>
+        // Check if React loaded
+        window.addEventListener('load', function() {
+            if (typeof React === 'undefined') {
+                document.getElementById('root').innerHTML = '<div style="padding: 40px; text-align: center;"><h1 style="color: red;">Error: React failed to load</h1><p>Please check your internet connection and refresh the page.</p></div>';
+                return;
+            }
+            
+            renderApp();
+        });
+
+        function renderApp() {
+            const { useState } = React;
+            const e = React.createElement;
+
+            // Simple Icon Components
+            const TrendingUp = ({ size = 24 }) => e('svg', {
+                xmlns: "http://www.w3.org/2000/svg",
+                width: size,
+                height: size,
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                strokeWidth: "2"
+            },
+                e('polyline', { points: "22 7 13.5 15.5 8.5 10.5 2 17" }),
+                e('polyline', { points: "16 7 22 7 22 13" })
+            );
+
+            const AlertCircle = ({ size = 24 }) => e('svg', {
+                xmlns: "http://www.w3.org/2000/svg",
+                width: size,
+                height: size,
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                strokeWidth: "2"
+            },
+                e('circle', { cx: "12", cy: "12", r: "10" }),
+                e('line', { x1: "12", y1: "8", x2: "12", y2: "12" }),
+                e('line', { x1: "12", y1: "16", x2: "12.01", y2: "16" })
+            );
+
+            const Award = ({ size = 24 }) => e('svg', {
+                xmlns: "http://www.w3.org/2000/svg",
+                width: size,
+                height: size,
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                strokeWidth: "2"
+            },
+                e('circle', { cx: "12", cy: "8", r: "7" }),
+                e('polyline', { points: "8.21 13.89 7 23 12 20 17 23 15.79 13.88" })
+            );
+
+            const Target = ({ size = 24 }) => e('svg', {
+                xmlns: "http://www.w3.org/2000/svg",
+                width: size,
+                height: size,
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                strokeWidth: "2"
+            },
+                e('circle', { cx: "12", cy: "12", r: "10" }),
+                e('circle', { cx: "12", cy: "12", r: "6" }),
+                e('circle', { cx: "12", cy: "12", r: "2" })
+            );
+
+            const BarChart3 = ({ size = 24 }) => e('svg', {
+                xmlns: "http://www.w3.org/2000/svg",
+                width: size,
+                height: size,
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                strokeWidth: "2"
+            },
+                e('path', { d: "M3 3v18h18" }),
+                e('path', { d: "M18 17V9" }),
+                e('path', { d: "M13 17V5" }),
+                e('path', { d: "M8 17v-3" })
+            );
+
+            function MarketModelDashboard() {
+                // Data
+                const salesData = {
+                    Region_1: {
+                        Industrie_1: [45.2, 48.7, 52.1, 50.8, 54.3, 58.9],
+                        Industrie_2: [62.5, 58.3, 65.4, 71.2, 76.8, 82.5],
+                        Industrie_3: [38.9, 41.2, 44.8, 46.1, 49.7, 53.2],
+                        Industrie_4: [71.3, 73.8, 75.9, 74.2, 77.6, 81.4]
+                    },
+                    Region_2: {
+                        Industrie_1: [28.7, 31.4, 35.8, 39.2, 43.1, 47.9],
+                        Industrie_2: [41.2, 39.8, 43.6, 48.9, 54.7, 61.3],
+                        Industrie_3: [19.5, 21.8, 24.3, 27.1, 30.8, 35.2],
+                        Industrie_4: [52.8, 55.9, 59.4, 58.1, 62.3, 67.8]
+                    }
+                };
+
+                const marketIndex = {
+                    Region_1: {
+                        Industrie_1: [100, 105.3, 108.7, 106.2, 110.5, 115.2],
+                        Industrie_2: [100, 95.8, 102.3, 108.9, 114.2, 119.8],
+                        Industrie_3: [100, 103.5, 107.2, 109.8, 113.6, 118.1],
+                        Industrie_4: [100, 104.2, 106.8, 105.1, 108.9, 112.7]
+                    },
+                    Region_2: {
+                        Industrie_1: [100, 107.2, 112.8, 118.5, 125.3, 132.8],
+                        Industrie_2: [100, 97.3, 103.8, 110.2, 117.8, 126.4],
+                        Industrie_3: [100, 108.4, 115.6, 123.8, 132.5, 142.1],
+                        Industrie_4: [100, 105.8, 110.3, 108.7, 113.9, 120.2]
+                    }
+                };
+
+                // Calculations
+                const calcCAGR = (start, end) => ((Math.pow(end / start, 1/5) - 1) * 100).toFixed(1);
+                const calcSPI = (sales, market) => ((sales / market) * 100).toFixed(1);
+                const calcCorrelation = (arr1, arr2) => {
+                    const n = arr1.length;
+                    const sum1 = arr1.reduce((a, b) => a + b, 0);
+                    const sum2 = arr2.reduce((a, b) => a + b, 0);
+                    const sum1Sq = arr1.reduce((s, v) => s + v * v, 0);
+                    const sum2Sq = arr2.reduce((s, v) => s + v * v, 0);
+                    const pSum = arr1.reduce((s, v, i) => s + v * arr2[i], 0);
+                    const num = pSum - (sum1 * sum2 / n);
+                    const den = Math.sqrt((sum1Sq - sum1 * sum1 / n) * (sum2Sq - sum2 * sum2 / n));
+                    return den === 0 ? 0 : (num / den).toFixed(2);
+                };
+
+                const totalSales2025 = Object.values(salesData).reduce((sum, region) => 
+                    sum + Object.values(region).reduce((s, ind) => s + ind[5], 0), 0
+                );
+                const totalSales2020 = Object.values(salesData).reduce((sum, region) => 
+                    sum + Object.values(region).reduce((s, ind) => s + ind[0], 0), 0
+                );
+                const totalCAGR = calcCAGR(totalSales2020, totalSales2025);
+
+                const allKPIs = [];
+                Object.keys(salesData).forEach(region => {
+                    Object.keys(salesData[region]).forEach(industry => {
+                        const sales = salesData[region][industry];
+                        const market = marketIndex[region][industry];
+                        allKPIs.push({
+                            region,
+                            industry,
+                            cagr: parseFloat(calcCAGR(sales[0], sales[5])),
+                            spi2025: parseFloat(calcSPI(sales[5], market[5])),
+                            correlation: parseFloat(calcCorrelation(sales, market)),
+                            sales2025: sales[5],
+                            yoy: ((sales[5] / sales[4] - 1) * 100).toFixed(1)
+                        });
+                    });
+                });
+
+                const avgSPI = (allKPIs.reduce((s, k) => s + k.spi2025, 0) / allKPIs.length).toFixed(1);
+                const outperformingCount = allKPIs.filter(k => k.spi2025 > 100).length;
+
+                const growthMarkets = [
+                    { name: 'Wachstumsmarkt 1', cagr: 8.2, volume2030: 18.5, currentSales: 8.3 },
+                    { name: 'Wachstumsmarkt 2', cagr: 12.5, volume2030: 15.7, currentSales: 3.2 },
+                    { name: 'Wachstumsmarkt 3', cagr: 6.1, volume2030: 28.6, currentSales: 15.7 }
+                ].map(m => ({
+                    ...m,
+                    opportunityIndex: ((m.cagr * m.volume2030) / m.currentSales).toFixed(0)
+                })).sort((a, b) => b.opportunityIndex - a.opportunityIndex);
+
+                const regionalStats = Object.keys(salesData).map(region => {
+                    const regionSales2025 = Object.values(salesData[region]).reduce((s, ind) => s + ind[5], 0);
+                    const regionSales2020 = Object.values(salesData[region]).reduce((s, ind) => s + ind[0], 0);
+                    const regionKPIs = allKPIs.filter(k => k.region === region);
+                    const topIndustry = regionKPIs.reduce((max, k) => k.cagr > max.cagr ? k : max);
+                    
+                    return {
+                        region,
+                        sales2025: regionSales2025.toFixed(1),
+                        cagr: calcCAGR(regionSales2020, regionSales2025),
+                        avgSPI: (regionKPIs.reduce((s, k) => s + k.spi2025, 0) / regionKPIs.length).toFixed(1),
+                        topIndustry: topIndustry.industry
+                    };
+                });
+
+                return e('div', { className: "w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6" },
+                    e('div', { className: "max-w-7xl mx-auto space-y-6" },
+                        
+                        // Header
+                        e('div', { className: "bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500" },
+                            e('h1', { className: "text-3xl font-bold text-slate-800 flex items-center gap-3" },
+                                e(BarChart3, { size: 36 }),
+                                " Market Model Dashboard"
+                            ),
+                            e('p', { className: "text-slate-600 mt-1" }, "Performance Analysis 2020-2025")
+                        ),
+
+                        // Executive Summary KPIs
+                        e('div', { className: "grid grid-cols-4 gap-4" },
+                            e('div', { className: "bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white" },
+                                e('div', { className: "flex items-center justify-between mb-2" },
+                                    e('span', { className: "text-blue-100 text-sm font-medium" }, "Total Sales 2025"),
+                                    e(Target, { size: 24 })
+                                ),
+                                e('div', { className: "text-3xl font-bold" }, totalSales2025.toFixed(1) + "M €"),
+                                e('div', { className: "text-blue-100 text-sm mt-1" }, "+" + ((totalSales2025/totalSales2020 - 1)*100).toFixed(1) + "% vs 2020")
+                            ),
+                            
+                            e('div', { className: "bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white" },
+                                e('div', { className: "flex items-center justify-between mb-2" },
+                                    e('span', { className: "text-green-100 text-sm font-medium" }, "Total CAGR"),
+                                    e(TrendingUp, { size: 24 })
+                                ),
+                                e('div', { className: "text-3xl font-bold" }, totalCAGR + "%"),
+                                e('div', { className: "text-green-100 text-sm mt-1" }, "2020-2025")
+                            ),
+                            
+                            e('div', { className: avgSPI > 100 ? "bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white" : "bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-6 text-white" },
+                                e('div', { className: "flex items-center justify-between mb-2" },
+                                    e('span', { className: "text-white/90 text-sm font-medium" }, "Avg SPI 2025"),
+                                    e(Award, { size: 24 })
+                                ),
+                                e('div', { className: "text-3xl font-bold" }, avgSPI),
+                                e('div', { className: "text-white/90 text-sm mt-1" }, avgSPI > 100 ? 'Outperforming' : 'Below Market')
+                            ),
+                            
+                            e('div', { className: "bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white" },
+                                e('div', { className: "flex items-center justify-between mb-2" },
+                                    e('span', { className: "text-purple-100 text-sm font-medium" }, "Outperformers"),
+                                    e(AlertCircle, { size: 24 })
+                                ),
+                                e('div', { className: "text-3xl font-bold" }, outperformingCount + "/8"),
+                                e('div', { className: "text-purple-100 text-sm mt-1" }, "Segments SPI > 100")
+                            )
+                        ),
+
+                        // Regional Overview
+                        e('div', { className: "bg-white rounded-xl shadow-lg p-6" },
+                            e('h2', { className: "text-xl font-bold text-slate-800 mb-4" }, "Regional Performance Overview"),
+                            e('div', { className: "grid grid-cols-2 gap-6" },
+                                regionalStats.map(stat =>
+                                    e('div', { key: stat.region, className: "border border-slate-200 rounded-lg p-4" },
+                                        e('div', { className: "flex items-center justify-between mb-3" },
+                                            e('h3', { className: "text-lg font-semibold text-slate-700" }, stat.region.replace('_', ' ')),
+                                            e('div', { 
+                                                className: stat.avgSPI > 100 ? 'px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700' : 'px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-700'
+                                            }, "SPI: " + stat.avgSPI)
+                                        ),
+                                        e('div', { className: "grid grid-cols-2 gap-3 mb-3" },
+                                            e('div', { className: "bg-slate-50 rounded p-3" },
+                                                e('div', { className: "text-xs text-slate-600 mb-1" }, "Sales 2025"),
+                                                e('div', { className: "text-lg font-bold text-slate-800" }, stat.sales2025 + "M €")
+                                            ),
+                                            e('div', { className: "bg-slate-50 rounded p-3" },
+                                                e('div', { className: "text-xs text-slate-600 mb-1" }, "CAGR"),
+                                                e('div', { className: "text-lg font-bold text-slate-800" }, stat.cagr + "%")
+                                            )
+                                        ),
+                                        e('div', { className: "text-sm" },
+                                            e('span', { className: "text-slate-600" }, "Top Performer: "),
+                                            e('span', { className: "font-semibold text-green-600" }, stat.topIndustry.replace('_', ' '))
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Performance Matrix Table
+                        e('div', { className: "bg-white rounded-xl shadow-lg p-6" },
+                            e('h2', { className: "text-xl font-bold text-slate-800 mb-4" }, "Performance Matrix"),
+                            e('div', { className: "overflow-x-auto" },
+                                e('table', { className: "w-full" },
+                                    e('thead', null,
+                                        e('tr', { className: "bg-slate-100 border-b-2 border-slate-300" },
+                                            e('th', { className: "text-left p-3 font-semibold text-slate-700" }, "Region"),
+                                            e('th', { className: "text-left p-3 font-semibold text-slate-700" }, "Industry"),
+                                            e('th', { className: "text-center p-3 font-semibold text-slate-700" }, "CAGR"),
+                                            e('th', { className: "text-center p-3 font-semibold text-slate-700" }, "SPI 2025"),
+                                            e('th', { className: "text-center p-3 font-semibold text-slate-700" }, "Correlation"),
+                                            e('th', { className: "text-center p-3 font-semibold text-slate-700" }, "Sales 2025")
+                                        )
+                                    ),
+                                    e('tbody', null,
+                                        allKPIs.sort((a, b) => b.cagr - a.cagr).map((kpi, idx) =>
+                                            e('tr', { key: kpi.region + '-' + kpi.industry, className: idx === 0 ? 'border-b border-slate-200 bg-green-50' : 'border-b border-slate-200' },
+                                                e('td', { className: "p-3 text-slate-700" }, kpi.region.replace('_', ' ')),
+                                                e('td', { className: "p-3 text-slate-700" }, kpi.industry.replace('_', ' ')),
+                                                e('td', { className: "text-center p-3 font-semibold text-slate-800" }, kpi.cagr.toFixed(1) + "%"),
+                                                e('td', { className: "text-center p-3" },
+                                                    e('span', { 
+                                                        className: kpi.spi2025 > 100 ? 'px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700' : 'px-3 py-1 rounded-full text-sm font-bold bg-amber-100 text-amber-700'
+                                                    }, kpi.spi2025.toFixed(0))
+                                                ),
+                                                e('td', { className: "text-center p-3 font-semibold text-slate-800" }, kpi.correlation),
+                                                e('td', { className: "text-center p-3 text-slate-700" }, kpi.sales2025.toFixed(1) + "M €")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Growth Markets Table
+                        e('div', { className: "bg-white rounded-xl shadow-lg p-6" },
+                            e('h2', { className: "text-xl font-bold text-slate-800 mb-4" }, "Growth Markets Portfolio 2025-2030"),
+                            e('div', { className: "overflow-x-auto" },
+                                e('table', { className: "w-full" },
+                                    e('thead', null,
+                                        e('tr', { className: "bg-slate-100 border-b-2 border-slate-300" },
+                                            e('th', { className: "text-left p-3 font-semibold text-slate-700" }, "Market"),
+                                            e('th', { className: "text-center p-3 font-semibold text-slate-700" }, "CAGR %"),
+                                            e('th', { className: "text-center p-3 font-semibold text-slate-700" }, "Volume 2030"),
+                                            e('th', { className: "text-center p-3 font-semibold text-slate-700" }, "Our Sales"),
+                                            e('th', { className: "text-center p-3 font-semibold text-slate-700" }, "Opportunity Index")
+                                        )
+                                    ),
+                                    e('tbody', null,
+                                        growthMarkets.map((market, idx) =>
+                                            e('tr', { key: market.name, className: idx === 0 ? 'border-b border-slate-200 bg-green-50' : 'border-b border-slate-200' },
+                                                e('td', { className: "p-3 font-medium text-slate-700" },
+                                                    market.name,
+                                                    idx === 0 ? e('span', { className: "ml-2 text-xs bg-green-500 text-white px-2 py-1 rounded" }, "Top") : null
+                                                ),
+                                                e('td', { className: "text-center p-3 font-semibold text-slate-800" }, market.cagr + "%"),
+                                                e('td', { className: "text-center p-3 font-semibold text-slate-800" }, market.volume2030 + "Bn €"),
+                                                e('td', { className: "text-center p-3 text-slate-600" }, market.currentSales + "M €"),
+                                                e('td', { className: "text-center p-3" },
+                                                    e('span', { 
+                                                        className: market.opportunityIndex > 500 ? 'px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700' :
+                                                                   market.opportunityIndex > 300 ? 'px-3 py-1 rounded-full text-sm font-bold bg-blue-100 text-blue-700' :
+                                                                   'px-3 py-1 rounded-full text-sm font-bold bg-purple-100 text-purple-700'
+                                                    }, market.opportunityIndex)
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Key Insights
+                        e('div', { className: "bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl shadow-lg p-6 text-white" },
+                            e('h2', { className: "text-2xl font-bold mb-4" }, "Key Insights & Recommendations"),
+                            e('div', { className: "space-y-3" },
+                                e('div', { className: "bg-white/10 rounded-lg p-4" },
+                                    e('div', { className: "font-semibold text-green-400 mb-1" }, "✓ Best Performance"),
+                                    e('p', { className: "text-sm" }, "Region 2 - Industrie 3 leads with exceptional 12.5% CAGR")
+                                ),
+                                e('div', { className: "bg-white/10 rounded-lg p-4" },
+                                    e('div', { className: "font-semibold text-amber-400 mb-1" }, "⚠ Needs Attention"),
+                                    e('p', { className: "text-sm" }, "Region 1 - Industrie 1 shows weakest performance with SPI of 51.1")
+                                ),
+                                e('div', { className: "bg-white/10 rounded-lg p-4" },
+                                    e('div', { className: "font-semibold text-blue-400 mb-1" }, "🎯 Top Opportunity"),
+                                    e('p', { className: "text-sm" }, "Wachstumsmarkt 2: Highest potential with 12.5% CAGR and Opportunity Index 615")
+                                ),
+                                e('div', { className: "bg-white/10 rounded-lg p-4" },
+                                    e('div', { className: "font-semibold text-purple-400 mb-1" }, "📊 Market Dynamics"),
+                                    e('p', { className: "text-sm" }, "Region 2 highly market-driven (corr. 0.94), Region 1 more independent (corr. 0.76)")
+                                )
+                            )
+                        ),
+
+                        // Footer
+                        e('div', { className: "text-center text-slate-600 text-sm py-4" },
+                            e('p', null, "Market Model Dashboard | Generated October 31, 2025")
+                        )
+                    )
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(e(MarketModelDashboard));
+        }
+    </script>
+</body>
+</html>
