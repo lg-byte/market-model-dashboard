@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Model Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 24px;
+            color: #1e293b;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 32px;
+            margin-bottom: 24px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #64748b;
+            font-size: 16px;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .kpi-card {
+            border-radius: 12px;
+            padding: 24px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .kpi-card.blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .kpi-card.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .kpi-card.amber { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .kpi-card.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        
+        .kpi-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .kpi-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .kpi-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .section h2 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            color: #1e293b;
+        }
+        
+        .region-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        
+        .region-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .region-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .region-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .badge.green {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge.amber {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-box {
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 12px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f8fafc;
+        }
+        
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        
+        th.center {
+            text-align: center;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+        }
+        
+        td.center {
+            text-align: center;
+        }
+        
+        tr:first-child {
+            background: #dcfce7;
+        }
+        
+        .pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .pill.green {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .pill.amber {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .pill.blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .pill.purple {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+        
+        .insights {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .insights h2 {
+            color: white;
+            margin-bottom: 24px;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .insight-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .insight-title.green { color: #6ee7b7; }
+        .insight-title.amber { color: #fcd34d; }
+        .insight-title.blue { color: #93c5fd; }
+        .insight-title.purple { color: #c4b5fd; }
+        
+        .insight-text {
+            font-size: 14px;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            padding: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .kpi-grid, .region-grid, .insights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Market Model Dashboard</h1>
+            <p>Performance Analysis 2020-2025</p>
+        </div>
+
+        <!-- Executive Summary KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card blue">
+                <div class="kpi-label">Total Sales 2025</div>
+                <div class="kpi-value">488.2M €</div>
+                <div class="kpi-subtitle">+35.6% vs 2020</div>
+            </div>
+            
+            <div class="kpi-card green">
+                <div class="kpi-label">Total CAGR</div>
+                <div class="kpi-value">6.3%</div>
+                <div class="kpi-subtitle">2020-2025</div>
+            </div>
+            
+            <div class="kpi-card amber">
+                <div class="kpi-label">Avg SPI 2025</div>
+                <div class="kpi-value">50.4</div>
+                <div class="kpi-subtitle">Below Market</div>
+            </div>
+            
+            <div class="kpi-card purple">
+                <div class="kpi-label">Outperformers</div>
+                <div class="kpi-value">0/8</div>
+                <div class="kpi-subtitle">Segments SPI > 100</div>
+            </div>
+        </div>
+
+        <!-- Regional Performance Overview -->
+        <div class="section">
+            <h2>Regional Performance Overview</h2>
+            <div class="region-grid">
+                <div class="region-card">
+                    <div class="region-header">
+                        <h3 class="region-title">Region 1</h3>
+                        <span class="badge amber">SPI: 59.3</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Sales 2025</div>
+                            <div class="stat-value">276.0M €</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">CAGR</div>
+                            <div class="stat-value">4.8%</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px;">
+                        <span style="color: #64748b;">Top Performer:</span>
+                        <span style="font-weight: 600; color: #059669;">Industrie 3</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <div class="region-header">
+                        <h3 class="region-title">Region 2</h3>
+                        <span class="badge amber">SPI: 41.5</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Sales 2025</div>
+                            <div class="stat-value">212.2M €</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">CAGR</div>
+                            <div class="stat-value">8.4%</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px;">
+                        <span style="color: #64748b;">Top Performer:</span>
+                        <span style="font-weight: 600; color: #059669;">Industrie 3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Matrix -->
+        <div class="section">
+            <h2>Performance Matrix</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Region</th>
+                            <th>Industry</th>
+                            <th class="center">CAGR</th>
+                            <th class="center">SPI 2025</th>
+                            <th class="center">Correlation</th>
+                            <th class="center">Sales 2025</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Region 2</td>
+                            <td>Industrie 3</td>
+                            <td class="center"><strong>12.5%</strong></td>
+                            <td class="center"><span class="pill amber">24.8</span></td>
+                            <td class="center"><strong>0.95</strong></td>
+                            <td class="center">35.2M €</td>
+                        </tr>
+                        <tr>
+                            <td>Region 2</td>
+                            <td>Industrie 1</td>
+                            <td class="center"><strong>10.8%</strong></td>
+                            <td class="center"><span class="pill amber">36.1</span></td>
+                            <td class="center"><strong>0.99</strong></td>
+                            <td class="center">47.9M €</td>
+                        </tr>
+                        <tr>
+                            <td>Region 2</td>
+                            <td>Industrie 2</td>
+                            <td class="center"><strong>8.3%</strong></td>
+                            <td class="center"><span class="pill amber">48.5</span></td>
+                            <td class="center"><strong>0.98</strong></td>
+                            <td class="center">61.3M €</td>
+                        </tr>
+                        <tr>
+                            <td>Region 1</td>
+                            <td>Industrie 3</td>
+                            <td class="center"><strong>6.5%</strong></td>
+                            <td class="center"><span class="pill amber">45.0</span></td>
+                            <td class="center"><strong>0.99</strong></td>
+                            <td class="center">53.2M €</td>
+                        </tr>
+                        <tr>
+                            <td>Region 1</td>
+                            <td>Industrie 2</td>
+                            <td class="center"><strong>5.7%</strong></td>
+                            <td class="center"><span class="pill amber">68.9</span></td>
+                            <td class="center"><strong>0.89</strong></td>
+                            <td class="center">82.5M €</td>
+                        </tr>
+                        <tr>
+                            <td>Region 1</td>
+                            <td>Industrie 1</td>
+                            <td class="center"><strong>5.4%</strong></td>
+                            <td class="center"><span class="pill amber">51.1</span></td>
+                            <td class="center"><strong>0.68</strong></td>
+                            <td class="center">58.9M €</td>
+                        </tr>
+                        <tr>
+                            <td>Region 2</td>
+                            <td>Industrie 4</td>
+                            <td class="center"><strong>5.1%</strong></td>
+                            <td class="center"><span class="pill amber">56.4</span></td>
+                            <td class="center"><strong>0.80</strong></td>
+                            <td class="center">67.8M €</td>
+                        </tr>
+                        <tr>
+                            <td>Region 1</td>
+                            <td>Industrie 4</td>
+                            <td class="center"><strong>2.7%</strong></td>
+                            <td class="center"><span class="pill amber">72.2</span></td>
+                            <td class="center"><strong>0.90</strong></td>
+                            <td class="center">81.4M €</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Growth Markets -->
+        <div class="section">
+            <h2>Growth Markets Portfolio 2025-2030</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Market</th>
+                            <th class="center">CAGR %</th>
+                            <th class="center">Volume 2030</th>
+                            <th class="center">Our Sales</th>
+                            <th class="center">Opportunity Index</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Wachstumsmarkt 2</strong> <span class="pill green">Top</span></td>
+                            <td class="center"><strong>12.5%</strong></td>
+                            <td class="center"><strong>15.7Bn €</strong></td>
+                            <td class="center">3.2M €</td>
+                            <td class="center"><span class="pill green">615</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Wachstumsmarkt 3</strong></td>
+                            <td class="center"><strong>6.1%</strong></td>
+                            <td class="center"><strong>28.6Bn €</strong></td>
+                            <td class="center">15.7M €</td>
+                            <td class="center"><span class="pill blue">111</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Wachstumsmarkt 1</strong></td>
+                            <td class="center"><strong>8.2%</strong></td>
+                            <td class="center"><strong>18.5Bn €</strong></td>
+                            <td class="center">8.3M €</td>
+                            <td class="center"><span class="pill purple">183</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Key Insights -->
+        <div class="insights">
+            <h2>🎯 Key Insights & Recommendations</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-title green">✓ Best Performance</div>
+                    <div class="insight-text">Region 2 - Industrie 3 leads with exceptional 12.5% CAGR and highest growth momentum</div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-title amber">⚠ Needs Attention</div>
+                    <div class="insight-text">Region 1 - Industrie 1 shows weakest performance with SPI of 51.1 and requires strategic intervention</div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-title blue">🎯 Top Opportunity</div>
+                    <div class="insight-text">Wachstumsmarkt 2: Highest potential with 12.5% CAGR and Opportunity Index 615 - prime expansion target</div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-title purple">📊 Market Dynamics</div>
+                    <div class="insight-text">Region 2 highly market-driven (corr. 0.94), Region 1 more independent (corr. 0.76) - different strategic approaches needed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Market Model Dashboard | Generated October 31, 2025</p>
+        </div>
+    </div>
+</body>
+</html>
